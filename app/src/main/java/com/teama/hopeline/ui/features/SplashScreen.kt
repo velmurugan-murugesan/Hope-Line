@@ -17,14 +17,17 @@ fun SplashScreen(navController: NavController) {
     Column(Modifier.fillMaxSize()) {
         Text("Splash Screen")
 
-
         LaunchedEffect(Unit) {
             delay(2000)
             val token = AppPreference.getStringValue("token")
             if (token.isEmpty()) {
                 navController.navigate(BottomNavItem.Login.route)
             } else {
-                navController.navigate(BottomNavItem.Home.route)
+                navController.navigate(BottomNavItem.Home.route) {
+                    popUpTo(BottomNavItem.Splash.route) {
+                        inclusive = true
+                    }
+                }
             }
         }
     }

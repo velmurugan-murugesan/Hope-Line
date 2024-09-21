@@ -1,7 +1,10 @@
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("org.jetbrains.kotlin.plugin.serialization") version "1.8.10"
+    id ("com.google.dagger.hilt.android")
+    id ("kotlin-kapt")
     alias(libs.plugins.google.gms.google.services)
 }
 
@@ -79,5 +82,11 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation(libs.retrofit)
-    implementation(libs.converter.gson)
+    implementation(
+        libs.converter.gson)
+
+    implementation ("com.google.dagger:hilt-android:2.51.1")
+    kapt ("com.google.dagger:hilt-compiler:2.51.1")
+    implementation("androidx.hilt:hilt-navigation-fragment:1.0.0")
+    implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
 }

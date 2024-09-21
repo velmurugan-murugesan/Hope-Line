@@ -18,6 +18,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
+import com.teama.hopeline.BottomNavItem
 import com.teama.hopeline.data.AppConstants
 import com.teama.hopeline.data.AppPreference
 import com.teama.hopeline.ui.theme.HopeLineTheme
@@ -26,10 +27,18 @@ import com.teama.hopeline.ui.theme.HopeLineTheme
 fun LoginScreen(navController: NavController) {
     val context = LocalContext.current
     val googleSignInClient = remember { getGoogleSignInClient(context) }
-    val signInLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-        handleSignInResult(task)
-    }
+    val signInLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            handleSignInResult(task, onSuccess = {
+                navController.navigate(BottomNavItem.Home) {
+                    popUpTo(BottomNavItem.Login.route) {
+                        inclusive = true
+                    }
+
+                }
+            })
+        }
 
     LaunchedEffect(Unit) {
         signInLauncher.launch(googleSignInClient.signInIntent)
@@ -52,7 +61,10 @@ private fun getGoogleSignInClient(context: Context): GoogleSignInClient {
     return GoogleSignIn.getClient(context, gso)
 }
 
-private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
+private fun handleSignInResult(
+    completedTask: Task<GoogleSignInAccount>,
+    onSuccess: () -> Unit
+) {
     try {
         val account = completedTask.getResult(ApiException::class.java)
         // Signed in successfully, show authenticated UI.
@@ -62,6 +74,8 @@ private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
         // Assuming you have a way to determine if the user is a volunteer
         val isVolunteer = determineIfVolunteer(account)
         AppPreference.saveString(AppConstants.KEY_IS_VOLUNTEER, isVolunteer.toString())
+        onSuccess()
+
     } catch (e: ApiException) {
         // Sign in was unsuccessful, handle the error
     }

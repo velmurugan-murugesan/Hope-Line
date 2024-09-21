@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLng
@@ -22,13 +23,17 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.teama.hopeline.data.model.Incident
 
 @Composable
-fun CreateIncidentScreen() {
+fun CreateIncidentScreen(
+    viewModel: CreateIncidentViewModel = hiltViewModel()
+) {
     val mapView = rememberMapViewWithLifecycle()
-    ReportIncidentScreen(mapView = mapView)
+    ReportIncidentScreen(mapView = mapView, onSaveIncident = {
+        viewModel.saveIncident(it)
+    })
 }
 
 @Composable
-fun ReportIncidentScreen(mapView: MapView) {
+fun ReportIncidentScreen(mapView: MapView, onSaveIncident:(Incident) -> Unit) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var noVolunteer by remember { mutableStateOf("") }
@@ -120,9 +125,28 @@ fun ReportIncidentScreen(mapView: MapView) {
         Button(onClick = {
             location?.let {
                 if (selectedType == "Incident") {
-                    saveIncident(title, description, it, noVolunteer.toInt(), context)
+                    val locationString = "${location!!.latitude},${location!!.longitude}"
+                    val incidentData = Incident(
+                        title = title,
+                        description = description,
+                        location = locationString,
+                        noOfVolunteer = noVolunteer,
+                        isHub = false
+                    )
+                    onSaveIncident(incidentData)
+                   // saveIncident(title, description, it, noOfVolunteer.toInt(), context)
                 } else {
-                    saveHub(title, description, it, context)
+                    val locationString = "${location!!.latitude},${location!!.longitude}"
+
+                    val incidentData = Incident(
+                        title = title,
+                        description = description,
+                        location = locationString,
+                        noOfVolunteer = "",
+                        isHub = false
+                    )
+                    onSaveIncident(incidentData)
+                //    saveHub(title, description, it, context)
                 }
             }
         }) {
@@ -137,7 +161,7 @@ private fun saveIncident(title: String, description: String, location: LatLng, n
         title = title,
         description = description,
         location = locationString,
-        noVolunteer = noVolunteer,
+        noOfVolunteer = "",
         isHub = false
     )
 

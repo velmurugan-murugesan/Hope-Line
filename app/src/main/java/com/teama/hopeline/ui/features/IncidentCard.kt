@@ -32,7 +32,7 @@ fun IncidentCard(incident: Incident) {
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             Text(
-                text = "Number of Volunteers: ${incident.noVolunteer}",
+                text = "Number of Volunteers: ${incident.noOfVolunteer}",
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(bottom = 8.dp)
             )

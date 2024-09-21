@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,24 +22,26 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.google.android.gms.maps.MapView
 import com.teama.hopeline.ui.features.CreateIncidentScreen
 import com.teama.hopeline.ui.features.HomeScreen
 import com.teama.hopeline.ui.features.LoginScreen
-import com.teama.hopeline.ui.features.ReportIncidentScreen
-import com.teama.hopeline.ui.features.SearchScreen
+import com.teama.hopeline.ui.features.NotificationScreen
+import com.teama.hopeline.ui.features.ProfileScreen
 import com.teama.hopeline.ui.features.SplashScreen
 import com.teama.hopeline.ui.theme.HopeLineTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,11 +49,15 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             HopeLineTheme {
+
+                val isShowBottomBar by remember {
+                    mutableStateOf(false)
+                }
                 val navController = rememberNavController()
                 Scaffold(modifier = Modifier.fillMaxSize(),
 
                     bottomBar = {
-                        BottomNavigationBar(navController)
+                            BottomNavigationBar(navController)
                     },
                     floatingActionButton = {
                         Button(onClick = {
@@ -79,12 +86,14 @@ class MainActivity : ComponentActivity() {
                         }
 
 
-                        composable(BottomNavItem.Search.route) {
-                            SearchScreen()
+                        composable(BottomNavItem.Notification.route) {
+                            NotificationScreen()
                         }
 
                         composable(BottomNavItem.Profile.route) {
-                            HomeScreen()
+                            ProfileScreen(
+                                navController = navController
+                            )
                         }
 
                         composable(BottomNavItem.CreateIncident.route) {
@@ -112,7 +121,7 @@ fun BottomNavigationBar(navController: NavController) {
 
         val items = listOf(
             BottomNavItem.Home,
-            BottomNavItem.Search,
+            BottomNavItem.Notification,
             BottomNavItem.Profile
         )
 
@@ -145,7 +154,7 @@ sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: 
     data object Splash: BottomNavItem("splash", Icons.Default.Home, "Splash")
     data object Login : BottomNavItem("login", Icons.Default.Home, "Login")
     data object Home : BottomNavItem("home", Icons.Default.Home, "Home")
-    data object Search : BottomNavItem("search", Icons.Default.Search, "Search")
+    data object Notification : BottomNavItem("notification", Icons.Default.Search, "Notification")
     data object Profile : BottomNavItem("profile", Icons.Default.Person, "Profile")
     data object CreateIncident : BottomNavItem("createIncident", Icons.Default.Person, "Create Incident")
 }
