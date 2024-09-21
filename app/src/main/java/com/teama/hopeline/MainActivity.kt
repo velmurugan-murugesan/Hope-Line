@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -44,7 +45,17 @@ class MainActivity : ComponentActivity() {
 
                     bottomBar = {
                         BottomNavigationBar(navController)
-                    }) { innerPadding ->
+                    },
+                    floatingActionButton = {
+                        Button(onClick = {
+
+
+
+                        }) {
+                            Text("+ Add ")
+                        }
+                    }
+                    ) { innerPadding ->
 
                     NavHost(
                         navController = navController,
