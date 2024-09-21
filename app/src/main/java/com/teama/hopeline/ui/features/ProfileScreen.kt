@@ -14,9 +14,11 @@ import com.teama.hopeline.data.AppConstants
 fun ProfileScreen() {
     val context = LocalContext.current
     val username = remember { AppPreference.getStringValue(AppConstants.KEY_USERNAME) }
+    val isVolunteer = remember { AppPreference.getStringValue(AppConstants.KEY_IS_VOLUNTEER).toBoolean() }
 
     Column(Modifier.fillMaxSize()) {
         Text("Profile")
         Text("Username: $username")
+        Text("Volunteer: ${if (isVolunteer) "Yes" else "No"}")
     }
 }

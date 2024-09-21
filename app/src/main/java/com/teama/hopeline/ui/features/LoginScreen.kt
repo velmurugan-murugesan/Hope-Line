@@ -57,11 +57,19 @@ private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
         val account = completedTask.getResult(ApiException::class.java)
         // Signed in successfully, show authenticated UI.
         // You can now use the account object to access user information
-        AppPreference.saveString("token", account.idToken.orEmpty())
         AppPreference.saveString(AppConstants.KEY_USERNAME, account.account?.name.orEmpty())
+
+        // Assuming you have a way to determine if the user is a volunteer
+        val isVolunteer = determineIfVolunteer(account)
+        AppPreference.saveString(AppConstants.KEY_IS_VOLUNTEER, isVolunteer.toString())
     } catch (e: ApiException) {
         // Sign in was unsuccessful, handle the error
     }
+}
+
+private fun determineIfVolunteer(account: GoogleSignInAccount): Boolean {
+    // Implement your logic to determine if the user is a volunteer
+    return false // Example: return true if the user is a volunteer
 }
 
 @Composable
