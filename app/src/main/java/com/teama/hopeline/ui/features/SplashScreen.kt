@@ -21,7 +21,11 @@ fun SplashScreen(navController: NavController) {
             delay(2000)
             val token = AppPreference.getStringValue("token")
             if (token.isEmpty()) {
-                navController.navigate(BottomNavItem.Login.route)
+                navController.navigate(BottomNavItem.Login.route) {
+                    popUpTo(BottomNavItem.Splash.route) {
+                        inclusive = true
+                    }
+                }
             } else {
                 navController.navigate(BottomNavItem.Home.route) {
                     popUpTo(BottomNavItem.Splash.route) {

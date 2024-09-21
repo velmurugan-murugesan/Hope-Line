@@ -3,6 +3,7 @@ package com.teama.hopeline.ui.features
 import android.content.Context
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -26,12 +27,16 @@ import com.teama.hopeline.ui.theme.HopeLineTheme
 @Composable
 fun LoginScreen(navController: NavController) {
     val context = LocalContext.current
+
+    Column(Modifier.fillMaxSize()) {
+        Text("Login Screen")
+    }
     val googleSignInClient = remember { getGoogleSignInClient(context) }
     val signInLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
             handleSignInResult(task, onSuccess = {
-                navController.navigate(BottomNavItem.Home) {
+                navController.navigate(BottomNavItem.Home.route) {
                     popUpTo(BottomNavItem.Login.route) {
                         inclusive = true
                     }
@@ -42,15 +47,6 @@ fun LoginScreen(navController: NavController) {
 
     LaunchedEffect(Unit) {
         signInLauncher.launch(googleSignInClient.signInIntent)
-    }
-
-    HopeLineTheme {
-        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-            Greeting(
-                name = "Android",
-                modifier = Modifier.padding(innerPadding)
-            )
-        }
     }
 }
 
@@ -69,6 +65,7 @@ private fun handleSignInResult(
         val account = completedTask.getResult(ApiException::class.java)
         // Signed in successfully, show authenticated UI.
         // You can now use the account object to access user information
+        AppPreference.saveString("token", account.idToken.orEmpty())
         AppPreference.saveString(AppConstants.KEY_USERNAME, account.account?.name.orEmpty())
 
         // Assuming you have a way to determine if the user is a volunteer
@@ -78,23 +75,11 @@ private fun handleSignInResult(
 
     } catch (e: ApiException) {
         // Sign in was unsuccessful, handle the error
+        onSuccess()
     }
 }
 
 private fun determineIfVolunteer(account: GoogleSignInAccount): Boolean {
     // Implement your logic to determine if the user is a volunteer
     return false // Example: return true if the user is a volunteer
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(text = "Hello $name!", modifier = modifier)
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    HopeLineTheme {
-        Greeting("Android")
-    }
 }
