@@ -1,5 +1,6 @@
 package com.teama.hopeline.ui.features
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -7,9 +8,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.teama.hopeline.BottomNavItem
+import com.teama.hopeline.R
 import com.teama.hopeline.data.AppPreference
 import com.teama.hopeline.data.AppConstants
 
@@ -28,6 +31,15 @@ fun ProfileScreen(navController: NavController) {
     LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         item {
             Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                // Add the logo at the top
+                Image(
+                    painter = painterResource(id = R.drawable.logo),
+                    contentDescription = "Logo",
+                    modifier = Modifier
+                        .size(100.dp)
+                        .padding(bottom = 16.dp)
+                )
+
                 Text("Profile", style = MaterialTheme.typography.headlineMedium)
                 Text("Username: $username", style = MaterialTheme.typography.titleMedium)
                 Text("Volunteer: ${if (isVolunteer) "Yes" else "No"}", style = MaterialTheme.typography.titleMedium)
@@ -38,15 +50,6 @@ fun ProfileScreen(navController: NavController) {
                     }) {
                         Text("Become a Volunteer")
                     }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = {
-                    AppPreference.clear()
-                    navController.navigate(BottomNavItem.Login.route) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                }) {
-                    Text("Log Out")
                 }
             }
         }
@@ -66,6 +69,18 @@ fun ProfileScreen(navController: NavController) {
 
         items(helplineNumbers) { number ->
             Text(number, style = MaterialTheme.typography.bodyLarge)
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = {
+                AppPreference.clear()
+                navController.navigate(BottomNavItem.Login.route) {
+                    popUpTo(0) { inclusive = true }
+                }
+            }) {
+                Text("Log Out")
+            }
         }
     }
 }
