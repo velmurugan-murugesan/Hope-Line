@@ -3,9 +3,7 @@ package com.teama.hopeline.ui.features
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,6 +19,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.teama.hopeline.data.model.Incident
 
 @Composable
 fun CreateIncidentScreen() {
@@ -32,9 +31,11 @@ fun CreateIncidentScreen() {
 fun ReportIncidentScreen(mapView: MapView) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
+    var noVolunteer by remember { mutableStateOf("") }
     var location by remember { mutableStateOf<LatLng?>(null) }
     var googleMap by remember { mutableStateOf<GoogleMap?>(null) }
     var marker by remember { mutableStateOf<Marker?>(null) }
+    var selectedType by remember { mutableStateOf("Incident") } // Track selected type
     val context = LocalContext.current
 
     Column(
@@ -44,15 +45,45 @@ fun ReportIncidentScreen(mapView: MapView) {
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.Start
     ) {
-        Text("Incident Title:")
-        TextField(value = title, onValueChange = { title = it })
+        Text("Select Type:")
+        Row {
+            RadioButton(
+                selected = selectedType == "Incident",
+                onClick = { selectedType = "Incident" }
+            )
+            Text("Incident")
+            RadioButton(
+                selected = selectedType == "Hub",
+                onClick = { selectedType = "Hub" }
+            )
+            Text("Hub")
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
+
+        if (selectedType == "Incident") {
+            Text("Incident Title:")
+            TextField(value = title, onValueChange = { title = it })
+
+            Spacer(modifier = Modifier.height(8.dp))
+        } else {
+            Text("Hub Name:")
+            TextField(value = title, onValueChange = { title = it })
+
+            Spacer(modifier = Modifier.height(8.dp))
+        }
 
         Text("Description:")
         TextField(value = description, onValueChange = { description = it })
 
         Spacer(modifier = Modifier.height(8.dp))
+
+        if (selectedType == "Incident") {
+            Text("No of Volunteers:")
+            TextField(value = noVolunteer, onValueChange = { noVolunteer = it })
+
+            Spacer(modifier = Modifier.height(8.dp))
+        }
 
         Text("Location: ${location?.latitude}, ${location?.longitude ?: ""}")
 
@@ -66,16 +97,13 @@ fun ReportIncidentScreen(mapView: MapView) {
                 // Listen for map clicks to place or move the marker
                 map.setOnMapClickListener { latLng ->
                     if (marker == null) {
-                        // If no marker exists, place one and make it draggable
                         marker = map.addMarker(MarkerOptions().position(latLng).draggable(true))
                     } else {
-                        // Move the existing marker to the new location
                         marker?.position = latLng
                     }
-                    location = latLng // Update location
+                    location = latLng
                 }
 
-                // Listen for marker drag events to update the location
                 map.setOnMarkerDragListener(object : GoogleMap.OnMarkerDragListener {
                     override fun onMarkerDragStart(marker: com.google.android.gms.maps.model.Marker) {}
                     override fun onMarkerDrag(marker: com.google.android.gms.maps.model.Marker) {}
@@ -89,24 +117,54 @@ fun ReportIncidentScreen(mapView: MapView) {
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(onClick = {
-            location?.let { saveIncident(title, description, it, context) }
+            location?.let {
+                if (selectedType == "Incident") {
+                    saveIncident(title, description, it, noVolunteer.toInt(), context)
+                } else {
+                    saveHub(title, description, it, context)
+                }
+            }
         }) {
             Text("Confirm")
         }
     }
 }
 
-private fun saveIncident(title: String, description: String, location: LatLng, context: Context) {
-    val db = FirebaseFirestore.getInstance()
-    val incidentData = hashMapOf(
-        "title" to title,
-        "description" to description,
-        "location" to mapOf("lat" to location.latitude, "lon" to location.longitude)
+private fun saveIncident(title: String, description: String, location: LatLng, noVolunteer: Int, context: Context) {
+    val locationString = "${location.latitude},${location.longitude}"
+    val incidentData = Incident(
+        title = title,
+        description = description,
+        location = locationString,
+        noVolunteer = noVolunteer,
+        isHub = false
     )
 
+    val db = FirebaseFirestore.getInstance()
     db.collection("incidents").add(incidentData)
         .addOnSuccessListener { Toast.makeText(context, "Incident Saved!", Toast.LENGTH_SHORT).show() }
         .addOnFailureListener { Toast.makeText(context, "Failed to Save Incident!", Toast.LENGTH_SHORT).show() }
+}
+
+private fun saveHub(title: String, description: String, location: LatLng, context: Context) {
+    val locationString = "${location.latitude},${location.longitude}"
+//    val hubData = hashMapOf(
+//        "name" to title,
+//        "description" to description,
+//        "location" to locationString
+//    )
+
+    val hubData = Incident(
+        title = title,
+        description = description,
+        location = locationString,
+        isHub = true
+    )
+
+    val db = FirebaseFirestore.getInstance()
+    db.collection("hubs").add(hubData)
+        .addOnSuccessListener { Toast.makeText(context, "Hub Saved!", Toast.LENGTH_SHORT).show() }
+        .addOnFailureListener { Toast.makeText(context, "Failed to Save Hub!", Toast.LENGTH_SHORT).show() }
 }
 
 // Helper to manage MapView lifecycle within Compose

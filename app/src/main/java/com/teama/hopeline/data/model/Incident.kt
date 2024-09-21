@@ -5,5 +5,6 @@ data class Incident(
     val title: String = "",
     val description: String = "",
     val location: String = "",
-    val noVolunteer: Int = 0
+    val noVolunteer: Int = 0,
+    val isHub: Boolean
 )
