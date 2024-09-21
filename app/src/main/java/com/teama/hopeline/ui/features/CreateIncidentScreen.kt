@@ -1,17 +1,145 @@
 package com.teama.hopeline.ui.features
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.OutlinedTextField
+import android.content.Context
+import android.widget.Toast
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.MapView
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.firebase.firestore.FirebaseFirestore
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 
 @Composable
-fun CreateIncidentScreen(modifier: Modifier = Modifier) {
+fun CreateIncidentScreen() {
+    val mapView = rememberMapViewWithLifecycle()
+    ReportIncidentScreen(mapView = mapView)
+}
+
+@Composable
+fun ReportIncidentScreen(mapView: MapView) {
+    var title by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var location by remember { mutableStateOf<LatLng?>(null) }
+    var googleMap by remember { mutableStateOf<GoogleMap?>(null) }
+    var marker by remember { mutableStateOf<Marker?>(null) }
+    val context = LocalContext.current
+
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.Start
     ) {
-        Text(text = "Create Incident")
+        Text("Incident Title:")
+        TextField(value = title, onValueChange = { title = it })
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text("Description:")
+        TextField(value = description, onValueChange = { description = it })
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text("Location: ${location?.latitude}, ${location?.longitude ?: ""}")
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        AndroidView(factory = { mapView }, modifier = Modifier.fillMaxHeight(0.5f)) {
+            mapView.getMapAsync { map ->
+                googleMap = map
+                map.uiSettings.isZoomControlsEnabled = true
+
+                // Listen for map clicks to place or move the marker
+                map.setOnMapClickListener { latLng ->
+                    if (marker == null) {
+                        // If no marker exists, place one and make it draggable
+                        marker = map.addMarker(MarkerOptions().position(latLng).draggable(true))
+                    } else {
+                        // Move the existing marker to the new location
+                        marker?.position = latLng
+                    }
+                    location = latLng // Update location
+                }
+
+                // Listen for marker drag events to update the location
+                map.setOnMarkerDragListener(object : GoogleMap.OnMarkerDragListener {
+                    override fun onMarkerDragStart(marker: com.google.android.gms.maps.model.Marker) {}
+                    override fun onMarkerDrag(marker: com.google.android.gms.maps.model.Marker) {}
+                    override fun onMarkerDragEnd(marker: com.google.android.gms.maps.model.Marker) {
+                        location = marker.position
+                    }
+                })
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(onClick = {
+            location?.let { saveIncident(title, description, it, context) }
+        }) {
+            Text("Confirm")
+        }
+    }
+}
+
+private fun saveIncident(title: String, description: String, location: LatLng, context: Context) {
+    val db = FirebaseFirestore.getInstance()
+    val incidentData = hashMapOf(
+        "title" to title,
+        "description" to description,
+        "location" to mapOf("lat" to location.latitude, "lon" to location.longitude)
+    )
+
+    db.collection("incidents").add(incidentData)
+        .addOnSuccessListener { Toast.makeText(context, "Incident Saved!", Toast.LENGTH_SHORT).show() }
+        .addOnFailureListener { Toast.makeText(context, "Failed to Save Incident!", Toast.LENGTH_SHORT).show() }
+}
+
+// Helper to manage MapView lifecycle within Compose
+@Composable
+fun rememberMapViewWithLifecycle(): MapView {
+    val context = LocalContext.current
+    val mapView = remember { MapView(context) }
+
+    val lifecycleObserver = rememberMapLifecycleObserver(mapView)
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    DisposableEffect(lifecycle) {
+        lifecycle.addObserver(lifecycleObserver)
+        onDispose {
+            lifecycle.removeObserver(lifecycleObserver)
+        }
+    }
+
+    return mapView
+}
+
+@Composable
+fun rememberMapLifecycleObserver(mapView: MapView): LifecycleEventObserver {
+    return remember {
+        LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_CREATE -> mapView.onCreate(null)
+                Lifecycle.Event.ON_START -> mapView.onStart()
+                Lifecycle.Event.ON_RESUME -> mapView.onResume()
+                Lifecycle.Event.ON_PAUSE -> mapView.onPause()
+                Lifecycle.Event.ON_STOP -> mapView.onStop()
+                Lifecycle.Event.ON_DESTROY -> mapView.onDestroy()
+                else -> Unit
+            }
+        }
     }
 }

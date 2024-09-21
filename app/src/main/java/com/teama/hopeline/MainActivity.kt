@@ -30,14 +30,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.maps.MapView
 import com.teama.hopeline.ui.features.CreateIncidentScreen
 import com.teama.hopeline.ui.features.HomeScreen
 import com.teama.hopeline.ui.features.LoginScreen
+import com.teama.hopeline.ui.features.ReportIncidentScreen
 import com.teama.hopeline.ui.features.SearchScreen
 import com.teama.hopeline.ui.features.SplashScreen
 import com.teama.hopeline.ui.theme.HopeLineTheme
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -51,7 +54,7 @@ class MainActivity : ComponentActivity() {
                     },
                     floatingActionButton = {
                         Button(onClick = {
-
+                            navController.navigate(BottomNavItem.CreateIncident.route)
                         }) {
                             Text("+ Add ")
                         }
