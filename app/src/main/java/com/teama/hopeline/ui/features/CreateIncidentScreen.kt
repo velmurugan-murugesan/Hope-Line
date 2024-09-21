@@ -43,10 +43,11 @@ fun ReportIncidentScreen(mapView: MapView) {
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.Start
+        horizontalAlignment = Alignment.CenterHorizontally // Center horizontally
     ) {
+
         Text("Select Type:")
-        Row {
+        Row(horizontalArrangement = Arrangement.Center) {
             RadioButton(
                 selected = selectedType == "Incident",
                 onClick = { selectedType = "Incident" }
@@ -148,11 +149,6 @@ private fun saveIncident(title: String, description: String, location: LatLng, n
 
 private fun saveHub(title: String, description: String, location: LatLng, context: Context) {
     val locationString = "${location.latitude},${location.longitude}"
-//    val hubData = hashMapOf(
-//        "name" to title,
-//        "description" to description,
-//        "location" to locationString
-//    )
 
     val hubData = Incident(
         title = title,
