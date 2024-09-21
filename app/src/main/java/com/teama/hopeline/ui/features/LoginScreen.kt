@@ -45,8 +45,12 @@ fun LoginScreen(navController: NavController) {
             })
         }
 
+
     LaunchedEffect(Unit) {
-        signInLauncher.launch(googleSignInClient.signInIntent)
+        val account = GoogleSignIn.getLastSignedInAccount(context)
+        if (account == null) {
+            signInLauncher.launch(googleSignInClient.signInIntent)
+        }
     }
 }
 
@@ -75,6 +79,7 @@ private fun handleSignInResult(
 
     } catch (e: ApiException) {
         // Sign in was unsuccessful, handle the error
+        AppPreference.saveString("token","123")
         onSuccess()
     }
 }
