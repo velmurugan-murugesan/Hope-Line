@@ -11,16 +11,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
+import com.teama.hopeline.data.AppPreference
 import com.teama.hopeline.ui.theme.HopeLineTheme
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(navController: NavController) {
     val context = LocalContext.current
     val googleSignInClient = remember { getGoogleSignInClient(context) }
     val signInLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -54,6 +56,7 @@ private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
         val account = completedTask.getResult(ApiException::class.java)
         // Signed in successfully, show authenticated UI.
         // You can now use the account object to access user information
+        AppPreference.saveString("token", account.idToken.orEmpty())
     } catch (e: ApiException) {
         // Sign in was unsuccessful, handle the error
     }

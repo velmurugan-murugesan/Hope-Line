@@ -30,8 +30,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.teama.hopeline.ui.features.CreateIncidentScreen
 import com.teama.hopeline.ui.features.HomeScreen
+import com.teama.hopeline.ui.features.LoginScreen
 import com.teama.hopeline.ui.features.SearchScreen
+import com.teama.hopeline.ui.features.SplashScreen
 import com.teama.hopeline.ui.theme.HopeLineTheme
 
 class MainActivity : ComponentActivity() {
@@ -49,8 +52,6 @@ class MainActivity : ComponentActivity() {
                     floatingActionButton = {
                         Button(onClick = {
 
-
-
                         }) {
                             Text("+ Add ")
                         }
@@ -59,9 +60,16 @@ class MainActivity : ComponentActivity() {
 
                     NavHost(
                         navController = navController,
-                        startDestination = BottomNavItem.Home.route,
+                        startDestination = BottomNavItem.Splash.route,
                         modifier = Modifier.padding(innerPadding)
                     ) {
+                        composable(BottomNavItem.Splash.route) {
+                            SplashScreen(navController)
+                        }
+
+                        composable(BottomNavItem.Login.route) {
+                            LoginScreen(navController)
+                        }
 
                         composable(BottomNavItem.Home.route) {
                             HomeScreen()
@@ -76,6 +84,9 @@ class MainActivity : ComponentActivity() {
                             HomeScreen()
                         }
 
+                        composable(BottomNavItem.CreateIncident.route) {
+                            CreateIncidentScreen()
+                        }
                     }
                 }
             }
@@ -128,7 +139,10 @@ fun BottomNavigationBar(navController: NavController) {
 }
 
 sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: String) {
+    data object Splash: BottomNavItem("splash", Icons.Default.Home, "Splash")
+    data object Login : BottomNavItem("login", Icons.Default.Home, "Login")
     data object Home : BottomNavItem("home", Icons.Default.Home, "Home")
     data object Search : BottomNavItem("search", Icons.Default.Search, "Search")
     data object Profile : BottomNavItem("profile", Icons.Default.Person, "Profile")
+    data object CreateIncident : BottomNavItem("createIncident", Icons.Default.Person, "Create Incident")
 }
