@@ -18,6 +18,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
+import com.teama.hopeline.data.AppConstants
 import com.teama.hopeline.data.AppPreference
 import com.teama.hopeline.ui.theme.HopeLineTheme
 
@@ -57,6 +58,7 @@ private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
         // Signed in successfully, show authenticated UI.
         // You can now use the account object to access user information
         AppPreference.saveString("token", account.idToken.orEmpty())
+        AppPreference.saveString(AppConstants.KEY_USERNAME, account.account?.name.orEmpty())
     } catch (e: ApiException) {
         // Sign in was unsuccessful, handle the error
     }
