@@ -8,11 +8,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.teama.hopeline.BottomNavItem
 import com.teama.hopeline.data.AppPreference
 import com.teama.hopeline.data.AppConstants
 
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(navController: NavController) {
     val context = LocalContext.current
     val username = remember { AppPreference.getStringValue(AppConstants.KEY_USERNAME) }
     var isVolunteer by remember { mutableStateOf(AppPreference.getStringValue(AppConstants.KEY_IS_VOLUNTEER).toBoolean()) }
@@ -36,6 +38,15 @@ fun ProfileScreen() {
                     }) {
                         Text("Become a Volunteer")
                     }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = {
+                    AppPreference.clear()
+                    navController.navigate(BottomNavItem.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }) {
+                    Text("Log Out")
                 }
             }
         }
